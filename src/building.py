@@ -34,7 +34,6 @@ class Building():
             raise ValueError('各楼层平均人数必须大于等于0')
         self._init__floors()
 
-    
     def _init__floors(self)->None:
         """初始化地上楼层和地下楼层。
             地下楼层用负数编号，楼层人数均设为0，且均为出发楼层。
