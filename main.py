@@ -303,9 +303,9 @@ def test_standard_doublecar():
     print('num_passengers_2= ', np.average(num_passengers_list2))
 
 def main() -> None:
-    # test_standard_onecar()
+    test_standard_onecar()
     # test_standard_doublecar()
-    test_onecar()
+    # test_onecar()
     # test_doublecar()
 
 if __name__ == "__main__":
