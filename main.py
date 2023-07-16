@@ -306,7 +306,8 @@ def main() -> None:
     # test_standard_onecar()
     # test_standard_doublecar()
     # test_onecar()
-    test_doublecar()
+    # test_doublecar()
+    pass
 
 if __name__ == "__main__":
     main()    
