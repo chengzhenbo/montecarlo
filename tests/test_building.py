@@ -1,7 +1,7 @@
 import pytest
 from src.building import Building
 from src.car import Car, CarType
-from src.exception import FloorError
+from src.exception import FloorError,FloorIdError
 
 def test_building_floor_heights()->None:
     b1 = Building(a_num_floors=2, 
@@ -10,7 +10,8 @@ def test_building_floor_heights()->None:
                   avg_floor_num_passengers=12)
     assert b1.floor_ids == [-2, -1, 1, 2], '楼层设置'
     assert b1.get_floor_height(-1) == 3.1, '楼层高度'
-    assert b1.get_floor_height(100) < 0, '楼层高度'
+    with pytest.raises(FloorIdError):
+        b1.get_floor_height(100), '楼层高度'
     b1.set_floor_height(1, 4.2)
     assert b1.get_floor_height(1) == 4.2, '楼层新高度'
     with pytest.raises(ValueError, match='to_floor must be greater than from_floor'):

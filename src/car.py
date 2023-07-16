@@ -23,6 +23,7 @@ class Car():
     _current_floor:Floor = field(default_factory=Floor) 
 
     def set_current_floor(self, c_floor:Floor)->None:
+        """将c_floor设为当前轿厢所处的楼层"""
         self._current_floor = c_floor
     
     @property

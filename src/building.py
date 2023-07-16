@@ -59,16 +59,20 @@ class Building():
                                     is_origin = is_origin)
 
     def register_car(self, car:Car)->None:
-        # 将新添加的轿厢置于建筑的第1层
-        car.set_current_floor(self.floors[1]) 
+        """将轿厢注册到建筑，包括以下操作：
+           step1:将轿厢添加到建筑，并设置该轿厢处于建筑的第一层
+           step1:对新添加的轿厢，求出其运行时间矩阵
+           step1:根据新添加轿厢的类型，确定停机楼层
+           step1:初始化各个出发楼层乘客占比 
+        """
+        # step1
         self._cars.append(car)
-        # 对新添加的轿厢，求出其运行时间矩阵
+        car.set_current_floor(self.floors[1]) 
+        # step2
         self._car_transition_matrixs[car.id] = self._set_transition_matrix(car)
-        # 根据新添加轿厢的类型，确定停机楼层
+        # step3
         self._set_car_stop_floors(car)
-        # 对于双轿厢，根据停机楼层更新其出发楼层
-        self.__update_origin_floors(car)
-        # 初始化各个出发楼层乘客占比 
+        # step4
         self.__init_origin_floor_percentages()
 
     def  get_round_trip_time(self, passengers:list[Passenger], 
@@ -171,12 +175,6 @@ class Building():
         percentage = 1.0/len(self.original_floor_ids)
         self.set_origin_floor_percentages(origin_floors={self.floors[f_id]:percentage 
                                                          for f_id in self.original_floor_ids})
-        
-    def __update_origin_floors(self, car:Car)->None:
-        """如果轿厢是双轿厢，且第1层是停机楼层，则将第二层也作为出发楼层"""
-        if car.car_type == CarType.DOUBLE:
-            if self.floors[1].id in car.stop_floor_ids:
-                self.set_floor_as_origin(floor_id=self.floors[2].id)
     
     def __single_car_from_to_floor_pairs(self,passengers:list[Passenger])->list[(Floor, Floor)]:
         """将乘梯的乘客形成（出发，目的）对"""
@@ -217,6 +215,9 @@ class Building():
             car.stop_floor_ids = self.floor_ids
         if car.car_type == CarType.DOUBLE:
             car.stop_floor_ids = self._set_double_car_stop_floors(floor_ids = self.floor_ids)
+            # 如果轿厢是双轿厢，且第1层是停机楼层，则将第二层也作为出发楼层
+            if self.floors[1].id in car.stop_floor_ids:
+                self.set_floor_as_origin(floor_id=self.floors[2].id)
     
     def _set_double_car_stop_floors(self, floor_ids:list)->list:
         num_floors = len(floor_ids)
@@ -232,7 +233,18 @@ class Building():
             # 确保最高层能有轿厢到达，且不发生轿厢外溢
             return stops+[floor_ids[-1]-2, floor_ids[-1]-1] 
 
-    def _set_transition_matrix(self, car:Car)->dict:
+    def _set_transition_matrix(self, car:Car)->dict[(Floor,Floor):float]:
+        """求出轿厢在楼层之间运行的时间
+
+        Args:
+            car (Car): 轿厢
+
+        Raises:
+            ValueError: 边界值错误
+
+        Returns:
+            dict: key:(出发楼层，目的楼层)， value:运行时间
+        """
         ttm = {}
         ind_floors = self.floor_ids
         num_floors = len(ind_floors)
@@ -336,18 +348,28 @@ class Building():
         return self._car_transition_matrixs[car.id][(from_floor, to_floor)]
     
     def get_two_floors_height(self, from_floor:Floor, to_floor:Floor)->float:
+        """计算从低楼层到高楼层之间的高度
+        Args:
+            from_floor (Floor): 低楼层
+            to_floor (Floor): 高楼层
+        Raises:
+            ValueError: 高低楼层异常
+        Returns:
+            float: 楼层高度
+        """
         if from_floor.id > to_floor.id:
             raise ValueError('to_floor must be greater than from_floor')
         # 浮点数的内部表示方式是有限的，因此在进行浮点数计算时可能会出现误差
         return round(fsum([self.get_floor_height(self.floor_ids[i]) 
                     for i in range(self.floor_ids.index(from_floor.id), 
-                                          self.floor_ids.index(to_floor.id))]), 2)
+                                   self.floor_ids.index(to_floor.id))]), 1)
 
     def get_floor_height(self, floor_id:int)->float:
-        if floor_id in self._floors:
-            return self._floors[floor_id].height
-        else:
-            return -1
+        if floor_id not in self.floor_ids:
+            raise FloorIdError(floor_id=100, message=f'楼层编号{100}不在楼层编号范围内.')
+        return self._floors[floor_id].height
+     
+            
         
     def get_floor_num_passengers(self, floor:Floor)->int:
         if floor.id in self.floor_ids:
