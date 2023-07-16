@@ -15,13 +15,13 @@ from src.passenger import Passenger
 
 @dataclass
 class Building():
-    a_num_floors:int = 1
-    b_num_floors:int = 0
-    avg_floor_height:float = 0.0
-    avg_floor_num_passengers:float = 0.0
-    _floors:dict[int:Floor] = field(default_factory=dict) 
-    _cars:list[Car] = field(default_factory=list) 
-    _car_transition_matrixs:dict[int:dict] = field(default_factory=dict) 
+    a_num_floors:int = 1                    # 建筑的地上楼层数
+    b_num_floors:int = 0                    # 建筑的地下楼层数
+    avg_floor_height:float = 0.0            # 各楼层的平均层高
+    avg_floor_num_passengers:float = 0.0    # 各楼层的平均乘客数
+    _floors:dict[int:Floor] = field(default_factory=dict) # 建筑拥有的楼层
+    _cars:list[Car] = field(default_factory=list)         # 建筑拥有的轿厢
+    _car_transition_matrixs:dict[int:dict] = field(default_factory=dict) # 各轿厢楼层运行时间
     
     def __post_init__(self)->None:
         if self.a_num_floors < 1:
@@ -36,19 +36,22 @@ class Building():
 
     
     def _init__floors(self)->None:
-        # 初始化地下楼层，同时将地下楼层初始化为出发楼层
+        """初始化地上楼层和地下楼层。
+            地下楼层用负数编号，楼层人数均设为0，且均为出发楼层。
+            地上楼层从1开始编号，第1层（大堂）设为出发层，第1层乘客人数设为0。
+        """
+        # 初始化地下楼层
         for i in range(self.b_num_floors, 0, -1):
-            b_floor_id = -1*i #地下楼层用负数编号
+            b_floor_id = -1*i # 地下楼层用负数编号
             self._floors[b_floor_id] = Floor(id = b_floor_id, 
                                        height = self.avg_floor_height,
                                        num_passengers = 0,
                                        is_origin=True)
-            
-        # 初始化地上楼层，将建筑地面第1层初始化为出发楼层
+        # 初始化地上楼层
         for i in range(1, self.a_num_floors+1):
             is_origin = False
             num_passenger = self.avg_floor_num_passengers
-            if i == 1:
+            if i == 1: # 第1层（大堂）设为出发层，第1层乘客人数设为0。
                 is_origin = True
                 num_passenger = 0
             self._floors[i] = Floor(id = i, 
