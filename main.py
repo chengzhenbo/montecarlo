@@ -305,8 +305,8 @@ def test_standard_doublecar():
 def main() -> None:
     # test_standard_onecar()
     # test_standard_doublecar()
-    # test_onecar()
-    test_doublecar()
+    test_onecar()
+    # test_doublecar()
 
 if __name__ == "__main__":
     main()    
