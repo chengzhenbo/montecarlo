@@ -24,7 +24,7 @@ def test_onecar()->None:
     # b1.set_floor_num_passengers(floor=b1.floors[23], num_passengers=0)
     b1.register_car(car = car1)
     b1.register_car(car = car2)
-    b1.get_floor_height(100)
+    b1.get_floor_height(b1.floors[100])
     print('building num passengers = ', b1.total_num_passengers)
 
     b1.set_car_service_floor_range(car=b1.cars[0], 

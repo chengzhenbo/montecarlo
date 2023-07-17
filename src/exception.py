@@ -1,15 +1,10 @@
 from dataclasses import dataclass
 
-
+@dataclass
 class FloorIdError(Exception):
-    def __init__(self,
-                 floor_id:int,
-                 message=f'楼层编号错误'):
-        self.floor_id = floor_id
-        self.message = message
-        super().__init__(self.message)
-
-
+    floor_id:int 
+    def __str__(self) -> str:
+        return f"楼层编号{self.floor_id}不在楼层编号范围内."
 
 class OriginFloorIdError(Exception):
     floor_id:int

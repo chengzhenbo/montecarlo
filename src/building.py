@@ -177,7 +177,7 @@ class Building():
                                                          for f_id in self.original_floor_ids})
     
     def __single_car_from_to_floor_pairs(self,passengers:list[Passenger])->list[(Floor, Floor)]:
-        """将乘梯的乘客形成（出发，目的）对"""
+        """将单轿厢类型乘梯的乘客形成（出发，目的）对"""
         floor_from_ids = [p.floor_from.id for p in passengers]
         floor_to_ids = [p.floor_to.id for p in passengers]
         floor_ids = floor_from_ids + floor_to_ids
@@ -190,6 +190,7 @@ class Building():
     def __double_car_from_to_floor_pairs(self,
                                          passengers:list[Passenger], 
                                          car:Car)->list[(Floor, Floor)]:
+        """将双轿厢乘梯的乘客形成（出发，目的）对"""
         floor_ids = []
         stop_floor_ids = self.car_stop_floor_ids(car=car)
         stop_floor_pair_ids = [(self.floors[f_id].id, 
@@ -209,6 +210,7 @@ class Building():
 
 
     def _set_car_stop_floors(self, car:Car)->None:
+        """设置轿厢可停机楼层"""
         if car not in self.cars:
             raise CarNotInBuildingError
         if car.car_type == CarType.SINGLE:
@@ -220,6 +222,7 @@ class Building():
                 self.set_floor_as_origin(floor_id=self.floors[2].id)
     
     def _set_double_car_stop_floors(self, floor_ids:list)->list:
+        """双轿厢停机楼层按总楼层奇偶数确定"""
         num_floors = len(floor_ids)
         if num_floors < 3:
             raise ValueError('双子轿厢的楼层数必须大于等于3')
@@ -235,13 +238,10 @@ class Building():
 
     def _set_transition_matrix(self, car:Car)->dict[(Floor,Floor):float]:
         """求出轿厢在楼层之间运行的时间
-
         Args:
             car (Car): 轿厢
-
         Raises:
             ValueError: 边界值错误
-
         Returns:
             dict: key:(出发楼层，目的楼层)， value:运行时间
         """
@@ -285,6 +285,7 @@ class Building():
     def set_floor_height(self, 
                          floor_id:int, 
                          height:float)->None:
+        """设定楼层高度"""
         if floor_id in self._floors:
             self._floors[floor_id].height = height
             
@@ -294,28 +295,33 @@ class Building():
     def set_floor_num_passengers(self, 
                                  floor:Floor, 
                                  num_passengers:int)->None:
+        """设定楼层乘客数"""
         if floor.id in self.floor_ids:
             self._floors[floor.id].num_passengers = num_passengers
         else:
             raise FloorIdError(floor_id = floor.id)
     
     def set_floor_as_origin(self, floor_id:int)->None:
+        """将楼层设置为出发楼层"""
         if floor_id in self._floors:
             self._floors[floor_id].is_origin = True 
         else:
             raise FloorIdError(floor_id = floor_id)
     
     def set_floor_as_non_origin(self, floor_id:int)->None:
+        """将楼层设置为非出发层"""
         if floor_id in self._floors:
             self._floors[floor_id].is_origin = False 
         else:
             raise FloorIdError(floor_id = floor_id)
         
     def set_floors_as_origin(self, floors:list[int])->None:
+        """"将若干楼层均设置为出发层"""
         for floor in floors:
             self.set_floor_as_origin(floor)
 
     def set_origin_floor_percentage(self, floor_id:int, percentage:float)->None:
+        """设置出发楼层乘客到达的比率"""
         if len(self.cars) == 0:
             raise NoCarInBuildingError('建筑内没有注册轿厢')
         if percentage > 1.0 or percentage < 0.0:
@@ -327,6 +333,7 @@ class Building():
     
     def set_origin_floor_percentages(self, 
                                      origin_floors:dict[Floor:float])->None:
+        """设置若干出发楼层的乘客到达的比率"""
         norm_sum = fsum(origin_floors.values())
         if norm_sum != 1:
             raise ValueError("norm_sum must be one") 
@@ -337,6 +344,7 @@ class Building():
                                        car:Car, 
                                        from_floor:Floor, 
                                        to_floor:Floor)->float:
+        """得到某个轿厢从from楼层到to楼层的运行时间"""
         if car not in  self.cars:
             raise CarNotInBuildingError
         if from_floor.id not in self.floors:
@@ -360,24 +368,32 @@ class Building():
         if from_floor.id > to_floor.id:
             raise ValueError('to_floor must be greater than from_floor')
         # 浮点数的内部表示方式是有限的，因此在进行浮点数计算时可能会出现误差
-        return round(fsum([self.get_floor_height(self.floor_ids[i]) 
+        return round(fsum([self.get_floor_id_height(self.floor_ids[i]) 
                     for i in range(self.floor_ids.index(from_floor.id), 
                                    self.floor_ids.index(to_floor.id))]), 1)
 
-    def get_floor_height(self, floor_id:int)->float:
+    def get_floor_id_height(self, floor_id:int)->float:
+        """根据楼层id得到该楼层高度值
+        Args:
+            floor_id (int): 楼层id
+        Raises:
+            FloorIdError: 楼层id不属于该建筑
+        Returns:
+            float: 楼层高度
+        """
         if floor_id not in self.floor_ids:
-            raise FloorIdError(floor_id=100, message=f'楼层编号{100}不在楼层编号范围内.')
+            raise FloorIdError(floor_id=floor_id)
         return self._floors[floor_id].height
-     
-            
-        
+ 
     def get_floor_num_passengers(self, floor:Floor)->int:
+        """得到楼层的乘客数量"""
         if floor.id in self.floor_ids:
             return self._floors[floor.id].num_passengers
         else:
             raise FloorError(floor.id)
     
     def car_stop_floor_ids(self, car:Car)->list:
+        """轿厢能停机的楼层id"""
         if car not in self.cars:
             raise CarNotInBuildingError
         return car.stop_floor_ids
@@ -387,6 +403,7 @@ class Building():
         ...
     
     def get_below_floor(self, current_floor:Floor)->Floor:
+        """当前楼层的下一楼层"""
         below_id = self.floor_ids.index(current_floor.id)
         if below_id == 0:#溢出楼层
             return None 
@@ -394,6 +411,7 @@ class Building():
             return self.floors[self.floor_ids[below_id-1]]
         
     def get_above_floor(self, current_floor:Floor)->Floor:
+        """当前楼层的上一楼层"""
         above_id = self.floor_ids.index(current_floor.id)
         if current_floor.id >= self.floor_ids[-1]:#溢出楼层
             return None 
@@ -431,6 +449,7 @@ class Building():
     
     @property
     def origin_floor_percentages(self)->dict:
+        """各出发楼层的乘客到达比率"""
         percentages = [self.floors[origin_floor].origin_floor_percentage 
                        for origin_floor in self.original_floor_ids]
         return OrderedDict((self.floors[k],v) for (k, v) in 

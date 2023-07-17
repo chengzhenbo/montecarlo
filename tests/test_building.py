@@ -9,11 +9,11 @@ def test_building_floor_heights()->None:
                   avg_floor_height=3.1, 
                   avg_floor_num_passengers=12)
     assert b1.floor_ids == [-2, -1, 1, 2], '楼层设置'
-    assert b1.get_floor_height(-1) == 3.1, '楼层高度'
-    with pytest.raises(FloorIdError):
-        b1.get_floor_height(100), '楼层高度'
+    assert b1.get_floor_id_height(-1) == 3.1, '楼层高度'
+    with pytest.raises(FloorIdError, match='楼层编号100不在楼层编号范围内'):
+        assert b1.get_floor_id_height(100), '楼层高度'
     b1.set_floor_height(1, 4.2)
-    assert b1.get_floor_height(1) == 4.2, '楼层新高度'
+    assert b1.get_floor_id_height(1) == 4.2, '楼层新高度'
     with pytest.raises(ValueError, match='to_floor must be greater than from_floor'):
         b1.get_two_floors_height(b1.floors[1], b1.floors[-1])
     assert b1.get_two_floors_height(b1.floors[-1], b1.floors[-1]) == 0.0, '两楼层之间距离'
