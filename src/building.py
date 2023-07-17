@@ -405,7 +405,7 @@ class Building():
     def get_below_floor(self, current_floor:Floor)->Floor:
         """当前楼层的下一楼层"""
         below_id = self.floor_ids.index(current_floor.id)
-        if below_id == 0:#溢出楼层
+        if below_id == 0:  # 溢出楼层
             return None 
         else:
             return self.floors[self.floor_ids[below_id-1]]
@@ -449,7 +449,7 @@ class Building():
     
     @property
     def origin_floor_percentages(self)->dict:
-        """各出发楼层的乘客到达比率 """
+        """ 各出发楼层的乘客到达比率 """
         percentages = [self.floors[origin_floor].origin_floor_percentage 
                        for origin_floor in self.original_floor_ids]
         return OrderedDict((self.floors[k],v) for (k, v) in 
