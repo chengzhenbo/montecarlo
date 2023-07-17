@@ -449,7 +449,7 @@ class Building():
     
     @property
     def origin_floor_percentages(self)->dict:
-        """各出发楼层的乘客到达比率"""
+        """各出发楼层的乘客到达比率 """
         percentages = [self.floors[origin_floor].origin_floor_percentage 
                        for origin_floor in self.original_floor_ids]
         return OrderedDict((self.floors[k],v) for (k, v) in 
